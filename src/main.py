@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from parser import load_alerts
-
+from correlator import correlate_alerts
 
 DEFAULT_FILE = (
     Path(__file__).resolve().parent.parent
@@ -53,6 +53,10 @@ def main():
         raise SystemExit(1)
 
     rejected = total - len(accepted)
+    triage_report = correlate_alerts(accepted)
+    cases = triage_report["cases"]
+    unmatched_alerts = triage_report["unmatched_alerts"]
+
 
     print()
     print("=" * 45)
@@ -68,8 +72,43 @@ def main():
 
         for error in errors:
             print(f"- {error}")
+
     else:
         print("\nNessun errore di validazione.")
+
+    print()
+    print("=" * 45)
+    print("       REPORT DI TRIAGE")
+    print("=" * 45)
+    print(f"Casi investigativi:  {len(cases)}")
+    print(f"Alert non correlati: {len(unmatched_alerts)}")
+
+    for case in cases:
+        print()
+        print(case["case_id"])
+        print(f"  Eventi: {', '.join(case['event_ids'])}")
+        print(f"  Regole: {', '.join(case['rules_triggered'])}")
+
+        for reason in case["correlation_reasons"]:
+            print(f"  Motivo: {reason}")
+
+        if case["indicators"]:
+            print(f"  Indicatori: {case['indicators']}")
+
+        for suggestion in case["analyst_suggestions"]:
+            print(f"  Suggerimento: {suggestion}")
+
+    print()
+    print("ALERT NON CORRELATI")
+    print("-" * 45)
+
+    for alert in unmatched_alerts:
+        print(
+            f"{alert['alert_id']} | "
+            f"{alert['timestamp']} | "
+            f"{alert['event_type']} | "
+            f"{alert['severity']}"
+        )
 
     print()
 

@@ -505,9 +505,10 @@
     "description": "Synthetic event: suspicious_process",
     "source": "synthetic"
   },
+
   {
-    "alert_id": "ALT-0046",
-    "timestamp": "2026-10-24T08:46:00Z",
+    "alert_id": "ALT-0047",
+    "timestamp": "2026-10-24T08:47:00Z",
     "event_type": "suspicious_process",
     "severity": "medium",
     "source_ip": "192.0.2.25",
