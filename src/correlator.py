@@ -5,6 +5,8 @@ from datetime import datetime, timedelta, timezone
 DEDUP_WINDOW_MINUTES = 2
 LOGIN_WINDOW_MINUTES = 10
 EMAIL_NETWORK_WINDOW_MINUTES = 30
+FAILED_LOGIN_BURST_THRESHOLD = 5
+FAILED_LOGIN_BURST_WINDOW_MINUTES = 10
 
 
 def _event_time(alert):
@@ -161,6 +163,99 @@ def _correlate_logins(alerts):
                     ),
                 )
             )
+
+    return candidates
+
+
+def _correlate_failed_login_bursts(alerts):
+    """
+    Detect repeated failed logins against one user or password spraying.
+
+    This rule identifies patterns for investigation; it does not prove
+    malicious activity or account compromise.
+    """
+    failed = sorted(
+        (
+            alert for alert in alerts
+            if alert.get("event_type") == "failed_login"
+            and alert.get("source_ip")
+            and alert.get("username")
+        ),
+        key=_event_time,
+    )
+
+    candidates = []
+    window = timedelta(minutes=FAILED_LOGIN_BURST_WINDOW_MINUTES)
+    threshold = FAILED_LOGIN_BURST_THRESHOLD
+
+    # Detect repeated failures against the same user from the same IP.
+    by_user_ip = {}
+
+    for alert in failed:
+        key = (alert["source_ip"], alert["username"])
+        by_user_ip.setdefault(key, []).append(alert)
+
+    for (source_ip, username), group in by_user_ip.items():
+        for start in range(len(group)):
+            cluster = []
+            start_time = _event_time(group[start])
+
+            for alert in group[start:]:
+                if _event_time(alert) - start_time > window:
+                    break
+                cluster.append(alert)
+
+            if len(cluster) >= threshold:
+                candidates.append(
+                    _new_candidate(
+                        cluster,
+                        "repeated_failed_logins",
+                        (
+                            f"Almeno {threshold} login falliti per "
+                            "lo stesso utente e IP entro "
+                            f"{FAILED_LOGIN_BURST_WINDOW_MINUTES} minuti"
+                        ),
+                    )
+                )
+                break
+
+    # Detect password spraying: one IP targeting several users.
+    by_ip = {}
+
+    for alert in failed:
+        by_ip.setdefault(alert["source_ip"], []).append(alert)
+
+    for source_ip, group in by_ip.items():
+        for start in range(len(group)):
+            start_time = _event_time(group[start])
+            cluster = []
+
+            for alert in group[start:]:
+                if _event_time(alert) - start_time > window:
+                    break
+                cluster.append(alert)
+
+            distinct_users = {
+                alert["username"] for alert in cluster
+            }
+
+            if (
+                len(cluster) >= threshold
+                and len(distinct_users) >= threshold
+            ):
+                candidates.append(
+                    _new_candidate(
+                        cluster,
+                        "repeated_failed_logins",
+                        (
+                            f"Almeno {threshold} login falliti verso "
+                            f"{threshold} o più utenti distinti dallo "
+                            "stesso IP entro "
+                            f"{FAILED_LOGIN_BURST_WINDOW_MINUTES} minuti"
+                        ),
+                    )
+                )
+                break
 
     return candidates
 
@@ -331,8 +426,8 @@ def correlate_alerts(alerts):
     """
     candidates = _deduplicate(alerts)
     candidates.extend(_correlate_logins(alerts))
+    candidates.extend(_correlate_failed_login_bursts(alerts))
     candidates.extend(_correlate_email_network(alerts))
-
     merged = _merge_candidates(candidates)
 
     alerts_by_id = {

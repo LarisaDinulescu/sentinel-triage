@@ -5,6 +5,7 @@ from pathlib import Path
 
 from parser import load_alerts
 from correlator import correlate_alerts
+from triage import assess_case
 
 DEFAULT_FILE = (
     Path(__file__).resolve().parent.parent
@@ -84,19 +85,30 @@ def main():
     print(f"Alert non correlati: {len(unmatched_alerts)}")
 
     for case in cases:
+        assessment = assess_case(case)
+
         print()
         print(case["case_id"])
+        print(f"  Priorità investigativa: {assessment['priority']}")
+        print(f"  Scenario: {assessment['scenario']}")
         print(f"  Eventi: {', '.join(case['event_ids'])}")
         print(f"  Regole: {', '.join(case['rules_triggered'])}")
 
-        for reason in case["correlation_reasons"]:
-            print(f"  Motivo: {reason}")
+        print("  Motivazione:")
+        for reason in assessment["rationale"]:
+            print(f"    - {reason}")
+
+        print("  Elementi da verificare:")
+        for item in assessment["items_to_verify"]:
+            print(f"    - {item}")
+
+        print("  Azioni consigliate:")
+        for action in assessment["recommended_actions"]:
+            print(f"    - {action}")
 
         if case["indicators"]:
             print(f"  Indicatori: {case['indicators']}")
 
-        for suggestion in case["analyst_suggestions"]:
-            print(f"  Suggerimento: {suggestion}")
 
     print()
     print("ALERT NON CORRELATI")

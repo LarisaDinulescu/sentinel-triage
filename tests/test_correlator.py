@@ -159,6 +159,48 @@ class TestAlertCorrelator(unittest.TestCase):
 
         self.assertEqual(len(all_ids), len(set(all_ids)))
 
+    def test_repeated_failed_logins_for_same_user_are_correlated(self):
+        alerts = [
+            make_alert(
+                f"ALT-{i:03d}",
+                f"2026-10-24T08:{i:02d}:00Z",
+                event_type="failed_login",
+            )
+            for i in range(5)
+        ]
+
+        report = correlate_alerts(alerts)
+
+        matching_cases = [
+            case for case in report["cases"]
+            if "repeated_failed_logins" in case["rules_triggered"]
+        ]
+
+        self.assertEqual(len(matching_cases), 1)
+        self.assertEqual(len(matching_cases[0]["event_ids"]), 5)
+        self.assertEqual(report["unmatched_alerts"], [])
+
+    def test_password_spraying_is_correlated(self):
+        alerts = [
+            make_alert(
+                f"ALT-{i:03d}",
+                f"2026-10-24T08:{i:02d}:00Z",
+                event_type="failed_login",
+                username=f"user{i}",
+            )
+            for i in range(5)
+        ]
+
+        report = correlate_alerts(alerts)
+
+        matching_cases = [
+            case for case in report["cases"]
+            if "repeated_failed_logins" in case["rules_triggered"]
+        ]
+
+        self.assertEqual(len(matching_cases), 1)
+        self.assertEqual(len(matching_cases[0]["event_ids"]), 5)
+        self.assertEqual(report["unmatched_alerts"], [])
 
     def test_independent_alert_groups_remain_separate(self):
         alerts = [
@@ -196,6 +238,45 @@ class TestAlertCorrelator(unittest.TestCase):
                 frozenset({"ALT-001", "ALT-002"}),
                 frozenset({"ALT-003", "ALT-004"}),
             },
+        )
+
+    def test_four_failed_logins_do_not_trigger_burst_rule(self):
+        alerts = [
+            make_alert(
+                f"ALT-{i:03d}",
+                f"2026-10-24T08:0{i}:00Z",
+                event_type="failed_login",
+            )
+            for i in range(4)
+        ]
+
+        report = correlate_alerts(alerts)
+
+        self.assertFalse(
+            any(
+                "repeated_failed_logins" in case["rules_triggered"]
+                for case in report["cases"]
+            )
+        )
+
+    def test_failed_logins_outside_window_do_not_trigger_burst_rule(self):
+        minutes = [0, 3, 6, 9, 12]
+        alerts = [
+            make_alert(
+                f"ALT-{i:03d}",
+                f"2026-10-24T08:{minute:02d}:00Z",
+                event_type="failed_login",
+            )
+            for i, minute in enumerate(minutes)
+        ]
+
+        report = correlate_alerts(alerts)
+
+        self.assertFalse(
+            any(
+                "repeated_failed_logins" in case["rules_triggered"]
+                for case in report["cases"]
+            )
         )
 
 if __name__ == "__main__":
