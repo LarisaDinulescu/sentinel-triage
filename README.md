@@ -15,11 +15,15 @@ A Python-based security alert triage prototype.
 
 From the project root:
 
-    python3 src/main.py
+```bash
+python3 src/main.py
+```
 
 ## Run tests
 
-    python3 -m unittest discover -s tests -v
+```bash
+python3 -m unittest discover -s tests -v
+```
 
 ## Safety
 
