@@ -7,16 +7,16 @@ SentinelTriage è un progetto di cybersecurity sviluppato per elaborare alert di
 
 ## Funzionalità principali
 
-- **Parsing e validazione degli alert** — verifica gli alert JSON, controlla la presenza dei campi obbligatori, normalizza i timestamp in UTC e segnala i record non validi.
-- **Deduplicazione degli alert** — identifica alert duplicati entro una finestra temporale di due minuti, preservando gli eventi di autenticazione fallita necessari alle analisi successive.
-- **Correlazione degli eventi** — collega eventi potenzialmente correlati in base a utenti, indirizzi IP sorgente, host e finestre temporali.
-- **Rilevamento di anomalie di autenticazione** — individua tentativi di accesso falliti ripetuti, potenziali attacchi di password spraying e sequenze di autenticazioni fallite seguite da un accesso riuscito.
-- **Correlazione di eventi potenzialmente legati al phishing** — individua clic su link email sospetti seguiti da attività di rete insolite che coinvolgono lo stesso utente e host.
-- **Prioritizzazione dei casi** — assegna una priorità ALTA, MEDIA o BASSA in base alle regole di rilevamento e alla gravità riportata negli alert.
-- **Supporto all'indagine** — presenta riepiloghi dei casi, motivazioni del rilevamento, indicatori rilevanti, elementi da verificare e azioni investigative raccomandate.
-- **Dashboard interattiva** — permette di esplorare i casi, consultare le priorità e analizzare gli eventi correlati.
-- **Esportazione dei report** — genera report in formato JSON e HTML per l'analisi e la documentazione.
-- **Test automatici** — utilizza il framework `unittest` di Python per verificare il comportamento del parser, della correlazione e del triage.
+- **Parsing e validazione degli alert** : verifica gli alert JSON, controlla la presenza dei campi obbligatori, normalizza i timestamp in UTC e segnala i record non validi.
+- **Deduplicazione degli alert** : identifica alert duplicati entro una finestra temporale di due minuti, preservando gli eventi di autenticazione fallita necessari alle analisi successive.
+- **Correlazione degli eventi** : collega eventi potenzialmente correlati in base a utenti, indirizzi IP sorgente, host e finestre temporali.
+- **Rilevamento di anomalie di autenticazione** : individua tentativi di accesso falliti ripetuti, potenziali attacchi di password spraying e sequenze di autenticazioni fallite seguite da un accesso riuscito.
+- **Correlazione di eventi potenzialmente legati al phishing** : individua clic su link email sospetti seguiti da attività di rete insolite che coinvolgono lo stesso utente e host.
+- **Prioritizzazione dei casi** : assegna una priorità ALTA, MEDIA o BASSA in base alle regole di rilevamento e alla gravità riportata negli alert.
+- **Supporto all'indagine** : presenta riepiloghi dei casi, motivazioni del rilevamento, indicatori rilevanti, elementi da verificare e azioni investigative raccomandate.
+- **Dashboard interattiva** : permette di esplorare i casi, consultare le priorità e analizzare gli eventi correlati.
+- **Esportazione dei report** : genera report in formato JSON e HTML per l'analisi e la documentazione.
+- **Test automatici** : utilizza il framework `unittest` di Python per verificare il comportamento del parser, della correlazione e del triage.
 
 ## Regole di rilevamento e correlazione
 
@@ -34,11 +34,11 @@ Questi rilevamenti si basano su regole configurate nel codice. Identificano sche
 
 ## Tecnologie utilizzate
 
-- **Python** — parsing, validazione, correlazione degli eventi e triage.
-- **Streamlit** — realizzazione della dashboard interattiva.
-- **JSON** — formato dei dati di input e dei report strutturati.
-- **HTML** — generazione di report consultabili tramite browser.
-- **unittest** — esecuzione dei test automatici.
+- **Python** : parsing, validazione, correlazione degli eventi e triage.
+- **Streamlit** : realizzazione della dashboard interattiva.
+- **JSON** : formato dei dati di input e dei report strutturati.
+- **HTML** : generazione di report consultabili tramite browser.
+- **unittest** : esecuzione dei test automatici.
 
 ## Struttura del progetto
 
