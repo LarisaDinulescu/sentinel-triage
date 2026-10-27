@@ -4,7 +4,6 @@
 
 SentinelTriage è un progetto di cybersecurity sviluppato per elaborare alert di sicurezza, individuare schemi sospetti tra eventi correlati e raggruppare le attività in casi di indagine. Utilizza regole di correlazione e prioritizzazione per aiutare gli analisti a concentrarsi sugli eventi potenzialmente più rilevanti.
 
-Il progetto dimostra competenze pratiche nello sviluppo Python, nell'elaborazione di eventi di sicurezza, nella progettazione di regole di rilevamento, nei test automatici e nella visualizzazione dei dati.
 
 ## Funzionalità principali
 
